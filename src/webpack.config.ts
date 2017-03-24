@@ -137,10 +137,12 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					{ context: 'src', from: '**/*', ignore: '*.ts' }
 				]);
 			}),
-			new CoreLoadPlugin({
-				detectLazyLoads: !args.disableLazyWidgetDetection,
-				ignoredModules,
-				basePath
+			includeWhen(!args.withTests, () => {
+				return new CoreLoadPlugin({
+					detectLazyLoads: !args.disableLazyWidgetDetection,
+					ignoredModules,
+					basePath
+				});
 			}),
 			...includeWhen(args.element, () => {
 				return [ new webpack.optimize.CommonsChunkPlugin({
@@ -275,7 +277,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 						{ test: /custom-element\.js/, loader: `imports-loader?widgetFactory=${args.element}` }
 					];
 				}),
-				...includeWhen(args.bundles && Object.keys(args.bundles).length, () => {
+				...includeWhen(!args.withTests && args.bundles && Object.keys(args.bundles).length, () => {
 					const loaders: any[] = [];
 
 					Object.keys(args.bundles).forEach(bundleName => {
